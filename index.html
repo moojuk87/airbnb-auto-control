@@ -183,10 +183,41 @@ function changeHour(d){
   updateHourDisplay();
 }
 
-function saveSchedule(){
+async function saveSchedule(){
   localStorage.setItem('schedule_hour', scheduleHour);
   const utcHour = (scheduleHour - 9 + 24) % 24;
-  log("schedule.yml → cron: '0 " + utcHour + " * * *' 으로 변경 후 push 해줘요");
+  const newCron = "0 " + utcHour + " * * *";
+  log("schedule.yml 업데이트 중...");
+  try{
+    // 현재 파일 내용 가져오기
+    const getRes = await fetch('https://api.github.com/repos/'+REPO+'/contents/.github/workflows/schedule.yml',{
+      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!getRes.ok){ log('파일 가져오기 실패: '+getRes.status,'err'); return; }
+    const fileData = await getRes.json();
+    const currentContent = atob(fileData.content.replace(/
+/g,''));
+    
+    // cron 값 변경
+    const newContent = currentContent.replace(/cron: '[^']*'/, "cron: '" + newCron + "'");
+    if(currentContent === newContent){ log('변경할 내용이 없어요','info'); return; }
+    
+    // 파일 업데이트
+    const putRes = await fetch('https://api.github.com/repos/'+REPO+'/contents/.github/workflows/schedule.yml',{
+      method:'PUT',
+      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify({
+        message:'스케줄 시간 변경: ' + scheduleHour + '시 (KST)',
+        content: btoa(unescape(encodeURIComponent(newContent))),
+        sha: fileData.sha
+      })
+    });
+    if(putRes.status===200||putRes.status===201){
+      log('스케줄 변경 완료! 매일 ' + scheduleHour + '시 (KST) 실행 ✅','ok');
+    }else{
+      log('업데이트 실패: HTTP '+putRes.status,'err');
+    }
+  }catch(e){ log('오류: '+e.message,'err'); }
 }
 
 function saveScheduleToggle(){
