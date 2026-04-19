@@ -291,6 +291,13 @@
     0%, 100% { opacity: 1; }
     50% { opacity: 0.3; }
   }
+
+  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #444; border-radius: 20px; transition: 0.2s; }
+  .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
+  input:checked + .slider { background: #FF5A5F; }
+  input:checked + .slider:before { transform: translateX(16px); }
 </style>
 </head>
 <body>
@@ -407,11 +414,40 @@ function log(msg, type = 'info') {
   area.scrollTop = area.scrollHeight;
 }
 
+function getActiveTasks() {
+  const all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  return all.filter(t => document.getElementById('toggle_'+t)?.checked);
+}
+
+function saveToggles() {
+  const all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  const state = {};
+  all.forEach(t => state[t] = document.getElementById('toggle_'+t)?.checked ?? true);
+  localStorage.setItem('task_toggles', JSON.stringify(state));
+}
+
+function loadToggles() {
+  try {
+    const state = JSON.parse(localStorage.getItem('task_toggles') || '{}');
+    Object.keys(state).forEach(t => {
+      const el = document.getElementById('toggle_'+t);
+      if (el) el.checked = state[t];
+    });
+  } catch(e) {}
+}
+
 async function runWorkflow(task) {
   const btn = document.getElementById('runAllBtn');
   btn.disabled = true;
   btn.textContent = '실행 중...';
-  log('실행 요청 중: ' + task + '...');
+  let actualTask = task;
+  if (task === 'all') {
+    const active = getActiveTasks();
+    if (active.length === 0) { log('활성화된 기능이 없어요!', 'err'); btn.disabled = false; btn.textContent = '전체 실행'; return; }
+    if (active.length === 4) { actualTask = 'all'; }
+    else { actualTask = active.join(','); }
+  }
+  log('실행 요청 중: ' + actualTask + '...');
   try {
     const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, {
       method: 'POST',
@@ -420,7 +456,7 @@ async function runWorkflow(task) {
         'Accept': 'application/vnd.github.v3+json',
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ ref: 'main', inputs: { task } })
+      body: JSON.stringify({ ref: 'main', inputs: { task: actualTask } })
     });
     if (res.status === 204) {
       log('실행 요청 성공! GitHub Actions 처리 중...', 'ok');
@@ -437,6 +473,23 @@ async function runWorkflow(task) {
   btn.textContent = '전체 실행';
 }
 
+let currentRunId = null;
+let pollInterval = null;
+
+async function cancelRun() {
+  if (!currentRunId) return;
+  try {
+    await fetch(`https://api.github.com/repos/${REPO}/actions/runs/${currentRunId}/cancel`, {
+      method: 'POST',
+      headers: { 'Authorization': 'token ' + TOKEN, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    log('중지 요청 완료!', 'ok');
+    setTimeout(loadRuns, 2000);
+  } catch(e) {
+    log('중지 실패: ' + e.message, 'err');
+  }
+}
+
 async function loadRuns() {
   try {
     const res = await fetch(`https://api.github.com/repos/${REPO}/actions/runs?per_page=6`, {
@@ -447,6 +500,16 @@ async function loadRuns() {
     if (!data.workflow_runs || data.workflow_runs.length === 0) {
       area.innerHTML = '<div class="empty-msg">실행 기록 없음</div>';
       return;
+    }
+    const running = data.workflow_runs.find(r => r.status === 'in_progress' || r.status === 'queued');
+    if (running) {
+      currentRunId = running.id;
+      document.getElementById('cancelBtn').style.display = 'block';
+      if (!pollInterval) pollInterval = setInterval(loadRuns, 5000);
+    } else {
+      currentRunId = null;
+      document.getElementById('cancelBtn').style.display = 'none';
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
     }
     area.innerHTML = data.workflow_runs.slice(0, 6).map(run => {
       const status = run.conclusion || run.status;
@@ -469,18 +532,9 @@ async function loadRuns() {
   }
 }
 
-function saveSchedule() {
-  const hour = parseInt(document.getElementById('scheduleHour').value);
-  if (isNaN(hour) || hour < 0 || hour > 23) {
-    log('0~23 사이 값을 입력해줘요', 'err');
-    return;
-  }
-  const utcHour = (hour - 9 + 24) % 24;
-  document.getElementById('scheduleInfo').textContent = `현재: 매일 오전 ${hour}시 (KST)`;
-  log(`schedule.yml → cron: '0 ${utcHour} * * *' 으로 변경 후 push 해줘요`, 'info');
-}
-
-if(TOKEN) { loadRuns(); setInterval(loadRuns, 30000); }
+loadToggles();
+loadRuns();
+setInterval(loadRuns, 30000); }
 
 function saveToken() {
   const t = document.getElementById('tokenInput').value.trim();
