@@ -6,7 +6,7 @@
 <title>MyStays 자동화</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-:root { --bg:#0f0f0f;--surface:#1a1a1a;--border:#2a2a2a;--accent:#FF5A5F;--text:#f0f0f0;--muted:#888;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444; }
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--border:#2a2a2a;--accent:#FF5A5F;--text:#f0f0f0;--muted:#888;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem 1rem 3rem;max-width:480px;margin:0 auto;}
 .header{display:flex;align-items:center;gap:12px;margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);}
@@ -30,7 +30,9 @@ input:checked+.slider{background:var(--accent);}
 input:checked+.slider:before{transform:translateX(16px);}
 .schedule-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;}
 .schedule-right{display:flex;align-items:center;gap:8px;}
-.time-input{width:54px;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:center;}
+.time-stepper{display:flex;align-items:center;gap:6px;}
+.time-stepper button{width:28px;height:28px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);cursor:pointer;font-size:16px;font-family:inherit;display:flex;align-items:center;justify-content:center;}
+.time-val{font-size:14px;font-weight:500;min-width:36px;text-align:center;}
 .save-btn{font-size:12px;padding:7px 12px;border:1px solid var(--accent);border-radius:8px;background:rgba(255,90,95,0.15);color:var(--accent);cursor:pointer;font-family:inherit;}
 .run-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);}
 .run-item:last-child{border-bottom:none;}
@@ -41,10 +43,11 @@ input:checked+.slider:before{transform:translateX(16px);}
 .run-status{font-size:11px;font-weight:500;}
 .run-status.success{color:var(--success);}.run-status.failure{color:var(--danger);}.run-status.running{color:var(--warning);}
 .log-area{background:#0a0a0a;border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;color:var(--muted);min-height:80px;max-height:200px;overflow-y:auto;line-height:1.7;}
-.log-ok{color:var(--success);}.log-err{color:var(--danger);}.log-info{color:var(--muted);}
+.log-ok{color:var(--success);}.log-err{color:var(--danger);}.log-info{color:var(--muted);}.log-step{color:#60a5fa;}
 .link-btn{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
 .refresh-btn{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;}
 .cancel-btn{font-size:11px;padding:5px 10px;border:1px solid var(--danger);border-radius:6px;background:transparent;color:var(--danger);cursor:pointer;font-family:inherit;display:none;}
+.more-btn{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;}
 .empty-msg{padding:16px;font-size:12px;color:var(--muted);text-align:center;}
 .pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warning);animation:pulse 1.2s infinite;flex-shrink:0;}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
@@ -109,11 +112,20 @@ input:checked+.slider:before{transform:translateX(16px);}
 <div class="section">
   <div class="section-label">스케줄 설정</div>
   <div class="card">
-    <div class="schedule-row">
-      <div><div style="font-size:14px;font-weight:500;">매일 자동 실행</div><div style="font-size:11px;color:var(--muted);margin-top:2px;" id="scheduleInfo">현재: 매일 오전 9시 (KST)</div></div>
+    <div class="task-item">
+      <div><div class="task-name">매일 자동 실행</div><div class="task-desc" id="scheduleInfo">현재: 매일 오전 9시 (KST)</div></div>
+      <div class="task-right">
+        <label class="toggle"><input type="checkbox" id="toggle_schedule" checked onchange="saveScheduleToggle()"><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="schedule-row" id="scheduleRow">
+      <div style="font-size:13px;color:var(--muted)">실행 시간</div>
       <div class="schedule-right">
-        <input type="number" class="time-input" id="scheduleHour" min="0" max="23" value="9">
-        <span style="font-size:12px;color:var(--muted)">시</span>
+        <div class="time-stepper">
+          <button onclick="changeHour(-1)">−</button>
+          <div class="time-val" id="hourDisplay">9시</div>
+          <button onclick="changeHour(1)">+</button>
+        </div>
         <button class="save-btn" onclick="saveSchedule()">저장</button>
       </div>
     </div>
@@ -125,6 +137,7 @@ input:checked+.slider:before{transform:translateX(16px);}
     <span>실행 결과</span>
     <div style="display:flex;gap:6px;">
       <button class="cancel-btn" id="cancelBtn" onclick="cancelRun()">중지</button>
+      <button class="more-btn" id="moreBtn" onclick="toggleMore()" style="display:none;">더보기</button>
       <button class="refresh-btn" onclick="loadRuns()">새로고침</button>
     </div>
   </div>
@@ -144,152 +157,218 @@ input:checked+.slider:before{transform:translateX(16px);}
 <script>
 const REPO = 'moojuk87/airbnb-auto-maintain';
 const WORKFLOW = 'schedule.yml';
-function getToken() { return localStorage.getItem('gh_token') || ''; }
+function getToken(){return localStorage.getItem('gh_token')||'';}
 
-function log(msg, type) {
-  type = type || 'info';
-  const area = document.getElementById('logArea');
-  if (area.querySelector('.log-info') && area.querySelector('.log-info').textContent === '대기 중...') area.innerHTML = '';
-  const line = document.createElement('div');
-  line.className = 'log-' + type;
-  const t = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  line.textContent = '[' + t + '] ' + msg;
-  area.appendChild(line);
-  area.scrollTop = area.scrollHeight;
+// 시간 설정
+var scheduleHour = parseInt(localStorage.getItem('schedule_hour')||'9');
+function updateHourDisplay(){
+  document.getElementById('hourDisplay').textContent = scheduleHour + '시';
+  document.getElementById('scheduleInfo').textContent = '현재: 매일 ' + scheduleHour + '시 (KST)';
+}
+function changeHour(d){
+  scheduleHour = (scheduleHour + d + 25) % 25;
+  if(scheduleHour === 24) scheduleHour = 0;
+  updateHourDisplay();
 }
 
-function saveToken() {
-  const t = document.getElementById('tokenInput').value.trim();
-  if (!t) return;
-  localStorage.setItem('gh_token', t);
-  document.getElementById('tokenSetup').style.display = 'none';
+function saveSchedule(){
+  localStorage.setItem('schedule_hour', scheduleHour);
+  const utcHour = (scheduleHour - 9 + 24) % 24;
+  log("schedule.yml → cron: '0 " + utcHour + " * * *' 으로 변경 후 push 해줘요");
+}
+
+function saveScheduleToggle(){
+  const on = document.getElementById('toggle_schedule').checked;
+  localStorage.setItem('schedule_on', on ? '1' : '0');
+  document.getElementById('scheduleRow').style.opacity = on ? '1' : '0.4';
+}
+
+function loadScheduleSettings(){
+  updateHourDisplay();
+  const on = localStorage.getItem('schedule_on') !== '0';
+  document.getElementById('toggle_schedule').checked = on;
+  document.getElementById('scheduleRow').style.opacity = on ? '1' : '0.4';
+}
+
+// 로그
+function log(msg, type){
+  type = type||'info';
+  const area = document.getElementById('logArea');
+  const first = area.querySelector('.log-info');
+  if(first && first.textContent==='대기 중...') area.innerHTML='';
+  const line = document.createElement('div');
+  line.className='log-'+type;
+  const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  line.textContent='['+t+'] '+msg;
+  area.appendChild(line);
+  area.scrollTop=area.scrollHeight;
+}
+
+// 토큰
+function saveToken(){
+  const t=document.getElementById('tokenInput').value.trim();
+  if(!t)return;
+  localStorage.setItem('gh_token',t);
+  document.getElementById('tokenSetup').style.display='none';
   loadRuns();
 }
-
-function checkToken() {
-  if (!getToken()) {
-    const el = document.getElementById('tokenSetup');
-    el.style.display = 'flex';
-    el.style.alignItems = 'center';
-    el.style.justifyContent = 'center';
+function checkToken(){
+  if(!getToken()){
+    const el=document.getElementById('tokenSetup');
+    el.style.display='flex';el.style.alignItems='center';el.style.justifyContent='center';
   }
 }
 
-function saveToggles() {
-  const tasks = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
-  const state = {};
-  tasks.forEach(function(t) { state[t] = document.getElementById('toggle_'+t).checked; });
-  localStorage.setItem('task_toggles', JSON.stringify(state));
+// 토글
+function saveToggles(){
+  const tasks=['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  const state={};
+  tasks.forEach(function(t){state[t]=document.getElementById('toggle_'+t).checked;});
+  localStorage.setItem('task_toggles',JSON.stringify(state));
+}
+function loadToggles(){
+  try{
+    const state=JSON.parse(localStorage.getItem('task_toggles')||'{}');
+    Object.keys(state).forEach(function(t){const el=document.getElementById('toggle_'+t);if(el)el.checked=state[t];});
+  }catch(e){}
+}
+function getActiveTasks(){
+  const all=['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  return all.filter(function(t){return document.getElementById('toggle_'+t).checked;});
 }
 
-function loadToggles() {
-  try {
-    const state = JSON.parse(localStorage.getItem('task_toggles') || '{}');
-    Object.keys(state).forEach(function(t) {
-      const el = document.getElementById('toggle_'+t);
-      if (el) el.checked = state[t];
-    });
-  } catch(e) {}
-}
-
-function getActiveTasks() {
-  const all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
-  return all.filter(function(t) { return document.getElementById('toggle_'+t).checked; });
-}
-
-async function dispatch(task) {
-  const res = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/' + WORKFLOW + '/dispatches', {
-    method: 'POST',
-    headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
-    body: JSON.stringify({ref: 'main', inputs: {task: task}})
+// API 호출
+async function dispatch(task){
+  const res=await fetch('https://api.github.com/repos/'+REPO+'/actions/workflows/'+WORKFLOW+'/dispatches',{
+    method:'POST',
+    headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+    body:JSON.stringify({ref:'main',inputs:{task:task}})
   });
   return res.status;
 }
 
-async function runAll() {
-  const btn = document.getElementById('runAllBtn');
-  btn.disabled = true; btn.textContent = '실행 중...';
-  const active = getActiveTasks();
-  if (active.length === 0) { log('활성화된 기능이 없어요!', 'err'); btn.disabled = false; btn.textContent = '전체 실행'; return; }
-  const task = active.length === 4 ? 'all' : active.join(',');
-  log('실행 요청 중: ' + task + '...');
-  try {
-    const status = await dispatch(task);
-    if (status === 204) { log('실행 요청 성공! GitHub Actions 처리 중...', 'ok'); setTimeout(loadRuns, 4000); }
-    else { log('오류: HTTP ' + status, 'err'); }
-  } catch(e) { log('네트워크 오류: ' + e.message, 'err'); }
-  btn.disabled = false; btn.textContent = '전체 실행';
+async function runAll(){
+  const btn=document.getElementById('runAllBtn');
+  btn.disabled=true;btn.textContent='실행 중...';
+  const active=getActiveTasks();
+  if(active.length===0){log('활성화된 기능이 없어요!','err');btn.disabled=false;btn.textContent='전체 실행';return;}
+  const task=active.length===4?'all':active.join(',');
+  log('실행 요청 중: '+task+'...');
+  try{
+    const status=await dispatch(task);
+    if(status===204){log('실행 요청 성공! GitHub Actions 처리 중...','ok');setTimeout(loadRuns,4000);}
+    else{log('오류: HTTP '+status,'err');}
+  }catch(e){log('네트워크 오류: '+e.message,'err');}
+  btn.disabled=false;btn.textContent='전체 실행';
 }
 
-async function runOne(task) {
-  log('실행 요청 중: ' + task + '...');
-  try {
-    const status = await dispatch(task);
-    if (status === 204) { log(task + ' 실행 요청 성공!', 'ok'); setTimeout(loadRuns, 4000); }
-    else { log('오류: HTTP ' + status, 'err'); }
-  } catch(e) { log('네트워크 오류: ' + e.message, 'err'); }
+async function runOne(task){
+  log('실행 요청 중: '+task+'...');
+  try{
+    const status=await dispatch(task);
+    if(status===204){log(task+' 실행 요청 성공!','ok');setTimeout(loadRuns,4000);}
+    else{log('오류: HTTP '+status,'err');}
+  }catch(e){log('네트워크 오류: '+e.message,'err');}
 }
 
-var currentRunId = null;
-var pollInterval = null;
+// 실행 결과
+var currentRunId=null;
+var pollInterval=null;
+var showMore=false;
+var allRuns=[];
 
-async function cancelRun() {
-  if (!currentRunId) return;
-  try {
-    await fetch('https://api.github.com/repos/' + REPO + '/actions/runs/' + currentRunId + '/cancel', {
-      method: 'POST', headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+function toggleMore(){
+  showMore=!showMore;
+  document.getElementById('moreBtn').textContent=showMore?'접기':'더보기';
+  renderRuns();
+}
+
+function renderRuns(){
+  const area=document.getElementById('runsArea');
+  const list=showMore?allRuns:allRuns.slice(0,3);
+  if(list.length===0){area.innerHTML='<div class="empty-msg">실행 기록 없음</div>';return;}
+  area.innerHTML=list.map(function(run){
+    const status=run.conclusion||run.status;
+    const dotClass=status==='success'?'dot-success':status==='failure'?'dot-failure':status==='in_progress'?'dot-running':'dot-queued';
+    const label=status==='success'?'성공':status==='failure'?'실패':status==='in_progress'?'실행중':'대기';
+    const labelClass=status==='success'?'success':status==='failure'?'failure':'running';
+    const time=new Date(run.created_at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    return '<div class="run-item">'+
+      (status==='in_progress'?'<span class="pulse"></span>':'<div class="run-dot '+dotClass+'"></div>')+
+      '<div class="run-name">'+(run.display_title||'Airbnb Auto Maintain')+'</div>'+
+      '<div class="run-meta"><div class="run-status '+labelClass+'">'+label+'</div><div>'+time+'</div></div>'+
+      '</div>';
+  }).join('');
+}
+
+async function loadRuns(){
+  try{
+    const res=await fetch('https://api.github.com/repos/'+REPO+'/actions/runs?per_page=10',{
+      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
     });
-    log('중지 요청 완료!', 'ok');
-    setTimeout(loadRuns, 2000);
-  } catch(e) { log('중지 실패: ' + e.message, 'err'); }
-}
+    if(!res.ok){document.getElementById('runsArea').innerHTML='<div class="empty-msg" style="color:#ef4444">인증 오류</div>';return;}
+    const data=await res.json();
+    if(!data.workflow_runs){return;}
+    allRuns=data.workflow_runs;
+    const moreBtn=document.getElementById('moreBtn');
+    moreBtn.style.display=allRuns.length>3?'block':'none';
+    renderRuns();
 
-async function loadRuns() {
-  try {
-    const res = await fetch('https://api.github.com/repos/' + REPO + '/actions/runs?per_page=6', {
-      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
-    });
-    if (!res.ok) { document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">인증 오류</div>'; return; }
-    const data = await res.json();
-    const area = document.getElementById('runsArea');
-    if (!data.workflow_runs || data.workflow_runs.length === 0) { area.innerHTML = '<div class="empty-msg">실행 기록 없음</div>'; return; }
-    const running = data.workflow_runs.find(function(r) { return r.status === 'in_progress' || r.status === 'queued'; });
-    if (running) {
-      currentRunId = running.id;
-      document.getElementById('cancelBtn').style.display = 'block';
-      if (!pollInterval) pollInterval = setInterval(loadRuns, 5000);
-    } else {
-      currentRunId = null;
-      document.getElementById('cancelBtn').style.display = 'none';
-      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    const running=allRuns.find(function(r){return r.status==='in_progress'||r.status==='queued';});
+    if(running){
+      currentRunId=running.id;
+      document.getElementById('cancelBtn').style.display='block';
+      if(!pollInterval)pollInterval=setInterval(function(){loadRuns();loadRunSteps();},5000);
+    }else{
+      currentRunId=null;
+      document.getElementById('cancelBtn').style.display='none';
+      if(pollInterval){clearInterval(pollInterval);pollInterval=null;}
     }
-    area.innerHTML = data.workflow_runs.slice(0, 6).map(function(run) {
-      const status = run.conclusion || run.status;
-      const dotClass = status === 'success' ? 'dot-success' : status === 'failure' ? 'dot-failure' : status === 'in_progress' ? 'dot-running' : 'dot-queued';
-      const label = status === 'success' ? '성공' : status === 'failure' ? '실패' : status === 'in_progress' ? '실행중' : '대기';
-      const labelClass = status === 'success' ? 'success' : status === 'failure' ? 'failure' : 'running';
-      const time = new Date(run.created_at).toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-      return '<div class="run-item">' +
-        (status === 'in_progress' ? '<span class="pulse"></span>' : '<div class="run-dot ' + dotClass + '"></div>') +
-        '<div class="run-name">' + (run.display_title || 'Airbnb Auto Maintain') + '</div>' +
-        '<div class="run-meta"><div class="run-status ' + labelClass + '">' + label + '</div><div>' + time + '</div></div>' +
-        '</div>';
-    }).join('');
-  } catch(e) { document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">로드 실패</div>'; }
+  }catch(e){document.getElementById('runsArea').innerHTML='<div class="empty-msg" style="color:#ef4444">로드 실패</div>';}
 }
 
-function saveSchedule() {
-  const hour = parseInt(document.getElementById('scheduleHour').value);
-  if (isNaN(hour) || hour < 0 || hour > 23) { log('0~23 사이 값을 입력해줘요', 'err'); return; }
-  const utcHour = (hour - 9 + 24) % 24;
-  document.getElementById('scheduleInfo').textContent = '현재: 매일 오전 ' + hour + '시 (KST)';
-  log("schedule.yml → cron: '0 " + utcHour + " * * *' 으로 변경 후 push 해줘요");
+// 실행 단계 상태 로그
+async function loadRunSteps(){
+  if(!currentRunId)return;
+  try{
+    const res=await fetch('https://api.github.com/repos/'+REPO+'/actions/runs/'+currentRunId+'/jobs',{
+      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
+    });
+    if(!res.ok)return;
+    const data=await res.json();
+    if(!data.jobs||!data.jobs[0])return;
+    const job=data.jobs[0];
+    const steps=job.steps||[];
+    const area=document.getElementById('logArea');
+    area.innerHTML='';
+    steps.forEach(function(step){
+      if(step.status==='skipped')return;
+      const icon=step.conclusion==='success'?'✅':step.status==='in_progress'?'🔄':step.conclusion==='failure'?'❌':'⏳';
+      const line=document.createElement('div');
+      line.className='log-step';
+      line.textContent=icon+' '+step.name;
+      area.appendChild(line);
+    });
+    area.scrollTop=area.scrollHeight;
+  }catch(e){}
+}
+
+async function cancelRun(){
+  if(!currentRunId)return;
+  try{
+    await fetch('https://api.github.com/repos/'+REPO+'/actions/runs/'+currentRunId+'/cancel',{
+      method:'POST',headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
+    });
+    log('중지 요청 완료!','ok');
+    setTimeout(loadRuns,2000);
+  }catch(e){log('중지 실패: '+e.message,'err');}
 }
 
 checkToken();
 loadToggles();
+loadScheduleSettings();
 loadRuns();
-setInterval(loadRuns, 30000);
+setInterval(loadRuns,30000);
 </script>
 </body>
 </html>
