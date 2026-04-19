@@ -40,10 +40,12 @@ input:checked+.slider:before{transform:translateX(16px);}
 .dot-success{background:var(--success);}.dot-failure{background:var(--danger);}.dot-running{background:var(--warning);}.dot-queued{background:#6b7280;}
 .run-name{flex:1;font-size:13px;}
 .run-meta{font-size:11px;color:var(--muted);text-align:right;}
-.run-status{font-size:11px;font-weight:500;}
-.run-status.success{color:var(--success);}.run-status.failure{color:var(--danger);}.run-status.running{color:var(--warning);}
-.log-area{background:#0a0a0a;border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;color:var(--muted);min-height:80px;max-height:200px;overflow-y:auto;line-height:1.7;}
-.log-ok{color:var(--success);}.log-err{color:var(--danger);}.log-info{color:var(--muted);}.log-step{color:#60a5fa;}
+.run-status.success{color:var(--success);font-size:11px;font-weight:500;}
+.run-status.failure{color:var(--danger);font-size:11px;font-weight:500;}
+.run-status.running{color:var(--warning);font-size:11px;font-weight:500;}
+.run-status.queued{color:#6b7280;font-size:11px;font-weight:500;}
+.log-area{background:#0a0a0a;border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;color:var(--muted);min-height:80px;max-height:250px;overflow-y:auto;line-height:1.8;}
+.log-ok{color:var(--success);}.log-err{color:var(--danger);}.log-info{color:var(--muted);}.log-step{color:#60a5fa;}.log-warn{color:var(--warning);}
 .link-btn{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
 .refresh-btn{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;}
 .cancel-btn{font-size:11px;padding:5px 10px;border:1px solid var(--danger);border-radius:6px;background:transparent;color:var(--danger);cursor:pointer;font-family:inherit;display:none;}
@@ -113,7 +115,7 @@ input:checked+.slider:before{transform:translateX(16px);}
   <div class="section-label">스케줄 설정</div>
   <div class="card">
     <div class="task-item">
-      <div><div class="task-name">매일 자동 실행</div><div class="task-desc" id="scheduleInfo">현재: 매일 오전 9시 (KST)</div></div>
+      <div><div class="task-name">매일 자동 실행</div><div class="task-desc" id="scheduleInfo">현재: 매일 9시 (KST)</div></div>
       <div class="task-right">
         <label class="toggle"><input type="checkbox" id="toggle_schedule" checked onchange="saveScheduleToggle()"><span class="slider"></span></label>
       </div>
@@ -122,12 +124,23 @@ input:checked+.slider:before{transform:translateX(16px);}
       <div style="font-size:13px;color:var(--muted)">실행 시간</div>
       <div class="schedule-right">
         <div class="time-stepper">
-          <button onclick="changeHour(-1)">−</button>
+          <button type="button" onclick="changeHour(-1)">−</button>
           <div class="time-val" id="hourDisplay">9시</div>
-          <button onclick="changeHour(1)">+</button>
+          <button type="button" onclick="changeHour(1)">+</button>
         </div>
-        <button class="save-btn" onclick="saveSchedule()">저장</button>
+        <button type="button" class="save-btn" onclick="saveSchedule()">저장</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-label">세션 업데이트</div>
+  <div class="card">
+    <div style="padding:14px 16px;">
+      <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">EditThisCookie에서 복사한 쿠키를 붙여넣어줘요</div>
+      <textarea id="sessionInput" placeholder="쿠키 JSON 붙여넣기..." style="width:100%;height:80px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'Courier New',monospace;padding:8px 10px;resize:none;margin-bottom:10px;"></textarea>
+      <button type="button" onclick="updateSession()" style="width:100%;padding:10px;background:transparent;border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">세션 업데이트</button>
     </div>
   </div>
 </div>
@@ -136,9 +149,9 @@ input:checked+.slider:before{transform:translateX(16px);}
   <div class="section-label">
     <span>실행 결과</span>
     <div style="display:flex;gap:6px;">
-      <button class="cancel-btn" id="cancelBtn" onclick="cancelRun()">중지</button>
-      <button class="more-btn" id="moreBtn" onclick="toggleMore()" style="display:none;">더보기</button>
-      <button class="refresh-btn" onclick="loadRuns()">새로고침</button>
+      <button type="button" class="cancel-btn" id="cancelBtn" onclick="cancelRun()">중지</button>
+      <button type="button" class="more-btn" id="moreBtn" onclick="toggleMore()" style="display:none;">더보기</button>
+      <button type="button" class="refresh-btn" onclick="loadRuns()">새로고침</button>
     </div>
   </div>
   <div class="card" style="margin-bottom:10px;">
@@ -148,306 +161,364 @@ input:checked+.slider:before{transform:translateX(16px);}
 </div>
 
 <div class="section">
-  <div class="section-label">세션 업데이트</div>
-  <div class="card">
-    <div style="padding:14px 16px;">
-      <div style="font-size:13px;color:var(--muted);margin-bottom:10px;">EditThisCookie에서 복사한 쿠키를 붙여넣어줘요</div>
-      <textarea id="sessionInput" placeholder="쿠키 JSON 붙여넣기..." style="width:100%;height:80px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'Courier New',monospace;padding:8px 10px;resize:none;margin-bottom:10px;"></textarea>
-      <button onclick="updateSession()" style="width:100%;padding:10px;background:transparent;border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;">세션 업데이트</button>
-    </div>
-  </div>
-</div>
-
-<div class="section">
   <a class="link-btn" href="https://docs.google.com/spreadsheets/d/1xtB4Rj1QwSjtDIsYeHzyPQ1XclnfHzydK4Gs_MXTkMA" target="_blank">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
     Google Sheets 열기
   </a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/modules/libsodium-wrappers.js"></script>
 <script>
-const REPO = 'moojuk87/airbnb-auto-maintain';
-const WORKFLOW = 'schedule.yml';
-function getToken(){return localStorage.getItem('gh_token')||'';}
+var REPO = 'moojuk87/airbnb-auto-maintain';
+var WORKFLOW = 'schedule.yml';
+var scheduleHour = parseInt(localStorage.getItem('schedule_hour') || '9');
+var currentRunId = null;
+var pollInterval = null;
+var showMore = false;
+var allRuns = [];
 
-// 시간 설정
-var scheduleHour = parseInt(localStorage.getItem('schedule_hour')||'9');
-function updateHourDisplay(){
+function getToken() { return localStorage.getItem('gh_token') || ''; }
+
+function log(msg, type) {
+  if (!type) type = 'info';
+  var area = document.getElementById('logArea');
+  var first = area.querySelector('.log-info');
+  if (first && first.textContent === '대기 중...') area.innerHTML = '';
+  var line = document.createElement('div');
+  line.className = 'log-' + type;
+  var t = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  line.textContent = '[' + t + '] ' + msg;
+  area.appendChild(line);
+  area.scrollTop = area.scrollHeight;
+}
+
+function saveToken() {
+  var t = document.getElementById('tokenInput').value.trim();
+  if (!t) return;
+  localStorage.setItem('gh_token', t);
+  document.getElementById('tokenSetup').style.display = 'none';
+  loadRuns();
+}
+
+function checkToken() {
+  if (!getToken()) {
+    var el = document.getElementById('tokenSetup');
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
+  }
+}
+
+function saveToggles() {
+  var tasks = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  var state = {};
+  for (var i = 0; i < tasks.length; i++) {
+    state[tasks[i]] = document.getElementById('toggle_' + tasks[i]).checked;
+  }
+  localStorage.setItem('task_toggles', JSON.stringify(state));
+}
+
+function loadToggles() {
+  try {
+    var state = JSON.parse(localStorage.getItem('task_toggles') || '{}');
+    var keys = Object.keys(state);
+    for (var i = 0; i < keys.length; i++) {
+      var el = document.getElementById('toggle_' + keys[i]);
+      if (el) el.checked = state[keys[i]];
+    }
+  } catch(e) {}
+}
+
+function getActiveTasks() {
+  var all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  return all.filter(function(t) { return document.getElementById('toggle_' + t).checked; });
+}
+
+function updateHourDisplay() {
   document.getElementById('hourDisplay').textContent = scheduleHour + '시';
   document.getElementById('scheduleInfo').textContent = '현재: 매일 ' + scheduleHour + '시 (KST)';
 }
-function changeHour(d){
-  scheduleHour = (scheduleHour + d + 25) % 25;
-  if(scheduleHour === 24) scheduleHour = 0;
+
+function changeHour(d) {
+  scheduleHour = scheduleHour + d;
+  if (scheduleHour > 24) scheduleHour = 0;
+  if (scheduleHour < 0) scheduleHour = 24;
   updateHourDisplay();
 }
 
-async function saveSchedule(){
-  localStorage.setItem('schedule_hour', scheduleHour);
-  const utcHour = (scheduleHour - 9 + 24) % 24;
-  const newCron = "0 " + utcHour + " * * *";
-  log("schedule.yml 업데이트 중...");
-  try{
-    // 현재 파일 내용 가져오기
-    const getRes = await fetch('https://api.github.com/repos/'+REPO+'/contents/.github/workflows/schedule.yml',{
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
-    });
-    if(!getRes.ok){ log('파일 가져오기 실패: '+getRes.status,'err'); return; }
-    const fileData = await getRes.json();
-    const currentContent = atob(fileData.content.replace(/
-/g,''));
-    
-    // cron 값 변경
-    const newContent = currentContent.replace(/cron: '[^']*'/, "cron: '" + newCron + "'");
-    if(currentContent === newContent){ log('변경할 내용이 없어요','info'); return; }
-    
-    // 파일 업데이트
-    const putRes = await fetch('https://api.github.com/repos/'+REPO+'/contents/.github/workflows/schedule.yml',{
-      method:'PUT',
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-      body:JSON.stringify({
-        message:'스케줄 시간 변경: ' + scheduleHour + '시 (KST)',
-        content: btoa(unescape(encodeURIComponent(newContent))),
-        sha: fileData.sha
-      })
-    });
-    if(putRes.status===200||putRes.status===201){
-      log('스케줄 변경 완료! 매일 ' + scheduleHour + '시 (KST) 실행 ✅','ok');
-    }else{
-      log('업데이트 실패: HTTP '+putRes.status,'err');
-    }
-  }catch(e){ log('오류: '+e.message,'err'); }
-}
-
-function saveScheduleToggle(){
-  const on = document.getElementById('toggle_schedule').checked;
+function saveScheduleToggle() {
+  var on = document.getElementById('toggle_schedule').checked;
   localStorage.setItem('schedule_on', on ? '1' : '0');
   document.getElementById('scheduleRow').style.opacity = on ? '1' : '0.4';
 }
 
-function loadScheduleSettings(){
+function loadScheduleSettings() {
   updateHourDisplay();
-  const on = localStorage.getItem('schedule_on') !== '0';
+  var on = localStorage.getItem('schedule_on') !== '0';
   document.getElementById('toggle_schedule').checked = on;
   document.getElementById('scheduleRow').style.opacity = on ? '1' : '0.4';
 }
 
-// 로그
-function log(msg, type){
-  type = type||'info';
-  const area = document.getElementById('logArea');
-  const first = area.querySelector('.log-info');
-  if(first && first.textContent==='대기 중...') area.innerHTML='';
-  const line = document.createElement('div');
-  line.className='log-'+type;
-  const t = new Date().toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  line.textContent='['+t+'] '+msg;
-  area.appendChild(line);
-  area.scrollTop=area.scrollHeight;
+async function saveSchedule() {
+  localStorage.setItem('schedule_hour', scheduleHour);
+  var utcHour = (scheduleHour - 9 + 24) % 24;
+  var newCron = '0 ' + utcHour + ' * * *';
+  log('schedule.yml 업데이트 중...');
+  try {
+    var getRes = await fetch('https://api.github.com/repos/' + REPO + '/contents/.github/workflows/schedule.yml', {
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    if (!getRes.ok) { log('파일 가져오기 실패: ' + getRes.status, 'err'); return; }
+    var fileData = await getRes.json();
+    var currentContent = decodeURIComponent(escape(atob(fileData.content.replace(/\n/g, ''))));
+    var newContent = currentContent.replace(/cron: '[0-9* ]+'/, "cron: '" + newCron + "'");
+    if (currentContent === newContent) { log('변경할 내용이 없어요', 'info'); return; }
+    var putRes = await fetch('https://api.github.com/repos/' + REPO + '/contents/.github/workflows/schedule.yml', {
+      method: 'PUT',
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        message: '스케줄 시간 변경: ' + scheduleHour + '시 (KST)',
+        content: btoa(unescape(encodeURIComponent(newContent))),
+        sha: fileData.sha
+      })
+    });
+    if (putRes.status === 200 || putRes.status === 201) {
+      log('스케줄 변경 완료! 매일 ' + scheduleHour + '시 (KST) 실행 ✅', 'ok');
+    } else {
+      log('업데이트 실패: HTTP ' + putRes.status, 'err');
+    }
+  } catch(e) { log('오류: ' + e.message, 'err'); }
 }
 
-// 토큰
-function saveToken(){
-  const t=document.getElementById('tokenInput').value.trim();
-  if(!t)return;
-  localStorage.setItem('gh_token',t);
-  document.getElementById('tokenSetup').style.display='none';
-  loadRuns();
-}
-function checkToken(){
-  if(!getToken()){
-    const el=document.getElementById('tokenSetup');
-    el.style.display='flex';el.style.alignItems='center';el.style.justifyContent='center';
-  }
+async function updateSession() {
+  var val = document.getElementById('sessionInput').value.trim();
+  if (!val) { log('쿠키를 붙여넣어줘요', 'err'); return; }
+  try { JSON.parse(val); } catch(e) { log('올바른 JSON 형식이 아니에요', 'err'); return; }
+  log('세션 업데이트 중...');
+  try {
+    var keyRes = await fetch('https://api.github.com/repos/' + REPO + '/actions/secrets/public-key', {
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    if (!keyRes.ok) { log('공개키 가져오기 실패: ' + keyRes.status, 'err'); return; }
+    var keyData = await keyRes.json();
+
+    // tweetnacl로 암호화
+    var msgUint8 = new TextEncoder().encode(val);
+    var keyUint8 = Uint8Array.from(atob(keyData.key), function(c) { return c.charCodeAt(0); });
+    var encrypted = nacl.box.before ? 
+      nacl.seal(msgUint8, keyUint8) : 
+      (function() {
+        var epk = nacl.box.keyPair();
+        var nonce = nacl.randomBytes(nacl.box.nonceLength);
+        var box = nacl.box(msgUint8, nonce, keyUint8, epk.secretKey);
+        var out = new Uint8Array(epk.publicKey.length + nonce.length + box.length);
+        out.set(epk.publicKey); out.set(nonce, epk.publicKey.length); out.set(box, epk.publicKey.length + nonce.length);
+        return out;
+      })();
+    var encB64 = btoa(String.fromCharCode.apply(null, encrypted));
+
+    var putRes = await fetch('https://api.github.com/repos/' + REPO + '/actions/secrets/SESSION_JSON', {
+      method: 'PUT',
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
+      body: JSON.stringify({encrypted_value: encB64, key_id: keyData.key_id})
+    });
+    if (putRes.status === 201 || putRes.status === 204) {
+      log('세션 업데이트 성공! ✅', 'ok');
+      document.getElementById('sessionInput').value = '';
+    } else {
+      log('세션 업데이트 실패: HTTP ' + putRes.status, 'err');
+    }
+  } catch(e) { log('오류: ' + e.message, 'err'); }
 }
 
-// 토글
-function saveToggles(){
-  const tasks=['title_changer','price_adjuster','photo_arranger','exposure_macro'];
-  const state={};
-  tasks.forEach(function(t){state[t]=document.getElementById('toggle_'+t).checked;});
-  localStorage.setItem('task_toggles',JSON.stringify(state));
-}
-function loadToggles(){
-  try{
-    const state=JSON.parse(localStorage.getItem('task_toggles')||'{}');
-    Object.keys(state).forEach(function(t){const el=document.getElementById('toggle_'+t);if(el)el.checked=state[t];});
-  }catch(e){}
-}
-function getActiveTasks(){
-  const all=['title_changer','price_adjuster','photo_arranger','exposure_macro'];
-  return all.filter(function(t){return document.getElementById('toggle_'+t).checked;});
-}
-
-// API 호출
-async function dispatch(task){
-  const res=await fetch('https://api.github.com/repos/'+REPO+'/actions/workflows/'+WORKFLOW+'/dispatches',{
-    method:'POST',
-    headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-    body:JSON.stringify({ref:'main',inputs:{task:task}})
+async function dispatch(task) {
+  var res = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/' + WORKFLOW + '/dispatches', {
+    method: 'POST',
+    headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
+    body: JSON.stringify({ref: 'main', inputs: {task: task}})
   });
   return res.status;
 }
 
-async function runAll(){
-  const btn=document.getElementById('runAllBtn');
-  btn.disabled=true;btn.textContent='실행 중...';
-  const active=getActiveTasks();
-  if(active.length===0){log('활성화된 기능이 없어요!','err');btn.disabled=false;btn.textContent='전체 실행';return;}
-  const task=active.length===4?'all':active.join(',');
-  log('실행 요청 중: '+task+'...');
-  try{
-    const status=await dispatch(task);
-    if(status===204){log('실행 요청 성공! GitHub Actions 처리 중...','ok');setTimeout(loadRuns,4000);}
-    else{log('오류: HTTP '+status,'err');}
-  }catch(e){log('네트워크 오류: '+e.message,'err');}
-  btn.disabled=false;btn.textContent='전체 실행';
+async function runAll() {
+  var btn = document.getElementById('runAllBtn');
+  btn.disabled = true; btn.textContent = '실행 중...';
+  var active = getActiveTasks();
+  if (active.length === 0) { log('활성화된 기능이 없어요!', 'err'); btn.disabled = false; btn.textContent = '전체 실행'; return; }
+  var task = active.length === 4 ? 'all' : active.join(',');
+  log('실행 요청 중: ' + task + '...');
+  try {
+    var status = await dispatch(task);
+    if (status === 204) { log('실행 요청 성공! GitHub Actions 처리 중...', 'ok'); setTimeout(loadRuns, 4000); }
+    else { log('오류: HTTP ' + status, 'err'); }
+  } catch(e) { log('네트워크 오류: ' + e.message, 'err'); }
+  btn.disabled = false; btn.textContent = '전체 실행';
 }
 
-async function runOne(task){
-  log('실행 요청 중: '+task+'...');
-  try{
-    const status=await dispatch(task);
-    if(status===204){log(task+' 실행 요청 성공!','ok');setTimeout(loadRuns,4000);}
-    else{log('오류: HTTP '+status,'err');}
-  }catch(e){log('네트워크 오류: '+e.message,'err');}
+async function runOne(task) {
+  log('실행 요청 중: ' + task + '...');
+  try {
+    var status = await dispatch(task);
+    if (status === 204) { log(task + ' 실행 요청 성공!', 'ok'); setTimeout(loadRuns, 4000); }
+    else { log('오류: HTTP ' + status, 'err'); }
+  } catch(e) { log('네트워크 오류: ' + e.message, 'err'); }
 }
 
-// 실행 결과
-var currentRunId=null;
-var pollInterval=null;
-var showMore=false;
-var allRuns=[];
+async function cancelRun() {
+  if (!currentRunId) return;
+  try {
+    await fetch('https://api.github.com/repos/' + REPO + '/actions/runs/' + currentRunId + '/cancel', {
+      method: 'POST', headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    log('중지 요청 완료!', 'ok');
+    setTimeout(loadRuns, 2000);
+  } catch(e) { log('중지 실패: ' + e.message, 'err'); }
+}
 
-function toggleMore(){
-  showMore=!showMore;
-  document.getElementById('moreBtn').textContent=showMore?'접기':'더보기';
+function toggleMore() {
+  showMore = !showMore;
+  document.getElementById('moreBtn').textContent = showMore ? '접기' : '더보기';
   renderRuns();
 }
 
-function renderRuns(){
-  const area=document.getElementById('runsArea');
-  const list=showMore?allRuns:allRuns.slice(0,3);
-  if(list.length===0){area.innerHTML='<div class="empty-msg">실행 기록 없음</div>';return;}
-  area.innerHTML=list.map(function(run){
-    const status=run.conclusion||run.status;
-    const dotClass=status==='success'?'dot-success':status==='failure'?'dot-failure':status==='in_progress'?'dot-running':'dot-queued';
-    const label=status==='success'?'성공':status==='failure'?'실패':status==='in_progress'?'실행중':'대기';
-    const labelClass=status==='success'?'success':status==='failure'?'failure':'running';
-    const time=new Date(run.created_at).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
-    return '<div class="run-item">'+
-      (status==='in_progress'?'<span class="pulse"></span>':'<div class="run-dot '+dotClass+'"></div>')+
-      '<div class="run-name">'+(run.display_title||'Airbnb Auto Maintain')+'</div>'+
-      '<div class="run-meta"><div class="run-status '+labelClass+'">'+label+'</div><div>'+time+'</div></div>'+
+function renderRuns() {
+  var area = document.getElementById('runsArea');
+  var list = showMore ? allRuns : allRuns.slice(0, 3);
+  if (list.length === 0) { area.innerHTML = '<div class="empty-msg">실행 기록 없음</div>'; return; }
+  area.innerHTML = list.map(function(run) {
+    var status = run.conclusion || run.status;
+    var dotClass = status === 'success' ? 'dot-success' : status === 'failure' ? 'dot-failure' : status === 'in_progress' ? 'dot-running' : 'dot-queued';
+    var label = status === 'success' ? '성공' : status === 'failure' ? '실패' : status === 'in_progress' ? '실행중' : '대기';
+    var labelClass = status === 'success' ? 'success' : status === 'failure' ? 'failure' : status === 'in_progress' ? 'running' : 'queued';
+    var time = new Date(run.created_at).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+    return '<div class="run-item" onclick="showRunDetail(' + run.id + ',' + (status==='failure'?'true':'false') + ')" style="cursor:pointer;">' +
+      (status === 'in_progress' ? '<span class="pulse"></span>' : '<div class="run-dot ' + dotClass + '"></div>') +
+      '<div class="run-name">' + (run.display_title || 'Airbnb Auto Maintain') + '</div>' +
+      '<div class="run-meta"><div class="run-status ' + labelClass + '">' + label + '</div><div>' + time + '</div></div>' +
       '</div>';
   }).join('');
 }
 
-async function loadRuns(){
-  try{
-    const res=await fetch('https://api.github.com/repos/'+REPO+'/actions/runs?per_page=10',{
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
+async function showRunDetail(runId, isFailed) {
+  log('실행 상세 로딩 중...', 'info');
+  try {
+    var res = await fetch('https://api.github.com/repos/' + REPO + '/actions/runs/' + runId + '/jobs', {
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
     });
-    if(!res.ok){document.getElementById('runsArea').innerHTML='<div class="empty-msg" style="color:#ef4444">인증 오류</div>';return;}
-    const data=await res.json();
-    if(!data.workflow_runs){return;}
-    allRuns=data.workflow_runs;
-    const moreBtn=document.getElementById('moreBtn');
-    moreBtn.style.display=allRuns.length>3?'block':'none';
+    if (!res.ok) return;
+    var data = await res.json();
+    if (!data.jobs || !data.jobs[0]) return;
+    var job = data.jobs[0];
+    var steps = job.steps || [];
+    var area = document.getElementById('logArea');
+    area.innerHTML = '';
+
+    var header = document.createElement('div');
+    header.className = 'log-info';
+    header.textContent = '── 실행 #' + runId + ' 상세 ──';
+    area.appendChild(header);
+
+    for (var i = 0; i < steps.length; i++) {
+      var step = steps[i];
+      if (step.status === 'skipped') continue;
+      var icon = step.conclusion === 'success' ? '✅' : step.status === 'in_progress' ? '🔄' : step.conclusion === 'failure' ? '❌' : '⏳';
+      var line = document.createElement('div');
+      line.className = step.conclusion === 'failure' ? 'log-err' : step.status === 'in_progress' ? 'log-warn' : 'log-step';
+      line.textContent = icon + ' ' + step.name;
+      area.appendChild(line);
+    }
+
+    if (isFailed) {
+      var failedStep = steps.find(function(s) { return s.conclusion === 'failure'; });
+      if (failedStep) {
+        var warn = document.createElement('div');
+        warn.className = 'log-warn';
+        warn.textContent = '⚠️ 실패 단계: ' + failedStep.name;
+        area.appendChild(warn);
+
+        var hint = document.createElement('div');
+        hint.className = 'log-err';
+        var hintText = '💡 ';
+        if (failedStep.name.toLowerCase().indexOf('session') > -1 ||
+            failedStep.name.toLowerCase().indexOf('cookie') > -1 ||
+            failedStep.name === 'title_changer 실행' ||
+            failedStep.name === 'price_adjuster 실행' ||
+            failedStep.name === 'photo_arranger 실행' ||
+            failedStep.name === 'exposure_macro 실행') {
+          hintText += '세션 만료 가능성 있어요. 세션 업데이트를 확인해줘요.';
+        } else if (failedStep.name === '의존성 설치') {
+          hintText += '패키지 설치 오류예요. 코드를 확인해줘요.';
+        } else if (failedStep.name.indexOf('복원') > -1) {
+          hintText += 'Secret 설정을 확인해줘요 (SESSION_JSON / CREDENTIALS_JSON).';
+        } else {
+          hintText += 'GitHub Actions 로그에서 자세한 내용을 확인해줘요.';
+        }
+        hint.textContent = hintText;
+        area.appendChild(hint);
+      }
+    }
+    area.scrollTop = area.scrollHeight;
+  } catch(e) { log('상세 로드 실패: ' + e.message, 'err'); }
+}
+
+async function loadRunSteps() {
+  if (!currentRunId) return;
+  try {
+    var res = await fetch('https://api.github.com/repos/' + REPO + '/actions/runs/' + currentRunId + '/jobs', {
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    if (!res.ok) return;
+    var data = await res.json();
+    if (!data.jobs || !data.jobs[0]) return;
+    var steps = data.jobs[0].steps || [];
+    var area = document.getElementById('logArea');
+    area.innerHTML = '';
+    for (var i = 0; i < steps.length; i++) {
+      var step = steps[i];
+      if (step.status === 'skipped') continue;
+      var icon = step.conclusion === 'success' ? '✅' : step.status === 'in_progress' ? '🔄' : step.conclusion === 'failure' ? '❌' : '⏳';
+      var line = document.createElement('div');
+      line.className = step.conclusion === 'failure' ? 'log-err' : step.status === 'in_progress' ? 'log-warn' : 'log-step';
+      line.textContent = icon + ' ' + step.name;
+      area.appendChild(line);
+    }
+    area.scrollTop = area.scrollHeight;
+  } catch(e) {}
+}
+
+async function loadRuns() {
+  try {
+    var res = await fetch('https://api.github.com/repos/' + REPO + '/actions/runs?per_page=10', {
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    if (!res.ok) { document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">인증 오류</div>'; return; }
+    var data = await res.json();
+    if (!data.workflow_runs) return;
+    allRuns = data.workflow_runs;
+    var moreBtn = document.getElementById('moreBtn');
+    moreBtn.style.display = allRuns.length > 3 ? 'block' : 'none';
     renderRuns();
 
-    const running=allRuns.find(function(r){return r.status==='in_progress'||r.status==='queued';});
-    if(running){
-      currentRunId=running.id;
-      document.getElementById('cancelBtn').style.display='block';
-      if(!pollInterval)pollInterval=setInterval(function(){loadRuns();loadRunSteps();},5000);
-    }else{
-      currentRunId=null;
-      document.getElementById('cancelBtn').style.display='none';
-      if(pollInterval){clearInterval(pollInterval);pollInterval=null;}
+    var running = null;
+    for (var i = 0; i < allRuns.length; i++) {
+      if (allRuns[i].status === 'in_progress' || allRuns[i].status === 'queued') { running = allRuns[i]; break; }
     }
-  }catch(e){document.getElementById('runsArea').innerHTML='<div class="empty-msg" style="color:#ef4444">로드 실패</div>';}
-}
-
-// 실행 단계 상태 로그
-async function loadRunSteps(){
-  if(!currentRunId)return;
-  try{
-    const res=await fetch('https://api.github.com/repos/'+REPO+'/actions/runs/'+currentRunId+'/jobs',{
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
-    });
-    if(!res.ok)return;
-    const data=await res.json();
-    if(!data.jobs||!data.jobs[0])return;
-    const job=data.jobs[0];
-    const steps=job.steps||[];
-    const area=document.getElementById('logArea');
-    area.innerHTML='';
-    steps.forEach(function(step){
-      if(step.status==='skipped')return;
-      const icon=step.conclusion==='success'?'✅':step.status==='in_progress'?'🔄':step.conclusion==='failure'?'❌':'⏳';
-      const line=document.createElement('div');
-      line.className='log-step';
-      line.textContent=icon+' '+step.name;
-      area.appendChild(line);
-    });
-    area.scrollTop=area.scrollHeight;
-  }catch(e){}
-}
-
-async function cancelRun(){
-  if(!currentRunId)return;
-  try{
-    await fetch('https://api.github.com/repos/'+REPO+'/actions/runs/'+currentRunId+'/cancel',{
-      method:'POST',headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
-    });
-    log('중지 요청 완료!','ok');
-    setTimeout(loadRuns,2000);
-  }catch(e){log('중지 실패: '+e.message,'err');}
-}
-
-async function updateSession(){
-  const val = document.getElementById('sessionInput').value.trim();
-  if(!val){ log('쿠키를 붙여넣어줘요', 'err'); return; }
-  try{ JSON.parse(val); }catch(e){ log('올바른 JSON 형식이 아니에요', 'err'); return; }
-
-  log('세션 업데이트 중...');
-  try{
-    // GitHub 공개키 가져오기
-    const keyRes = await fetch('https://api.github.com/repos/'+REPO+'/actions/secrets/public-key',{
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json'}
-    });
-    if(!keyRes.ok){ log('공개키 가져오기 실패: '+keyRes.status, 'err'); return; }
-    const keyData = await keyRes.json();
-
-    // libsodium으로 암호화
-    await sodium.ready;
-    const binKey = sodium.from_base64(keyData.key, sodium.base64_variants.ORIGINAL);
-    const binMsg = sodium.from_string(val);
-    const encrypted = sodium.crypto_box_seal(binMsg, binKey);
-    const encryptedB64 = sodium.to_base64(encrypted, sodium.base64_variants.ORIGINAL);
-
-    // Secret 업데이트
-    const res = await fetch('https://api.github.com/repos/'+REPO+'/actions/secrets/SESSION_JSON',{
-      method:'PUT',
-      headers:{'Authorization':'token '+getToken(),'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-      body:JSON.stringify({encrypted_value:encryptedB64, key_id:keyData.key_id})
-    });
-    if(res.status===201||res.status===204){
-      log('세션 업데이트 성공! ✅', 'ok');
-      document.getElementById('sessionInput').value='';
-    }else{
-      log('업데이트 실패: HTTP '+res.status, 'err');
+    if (running) {
+      currentRunId = running.id;
+      document.getElementById('cancelBtn').style.display = 'block';
+      if (!pollInterval) pollInterval = setInterval(function() { loadRuns(); loadRunSteps(); }, 5000);
+    } else {
+      currentRunId = null;
+      document.getElementById('cancelBtn').style.display = 'none';
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
     }
-  }catch(e){ log('오류: '+e.message, 'err'); }
+  } catch(e) { document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">로드 실패</div>'; }
 }
 
 checkToken();
 loadToggles();
 loadScheduleSettings();
 loadRuns();
-setInterval(loadRuns,30000);
+setInterval(loadRuns, 30000);
 </script>
 </body>
 </html>
