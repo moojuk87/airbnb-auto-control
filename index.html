@@ -295,7 +295,7 @@
 </head>
 <body>
 
-<div id="tokenSetup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;display:flex;align-items:center;justify-content:center;padding:1rem;">
+<div id="tokenSetup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;align-items:center;justify-content:center;padding:1rem;">
   <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:1.5rem;width:100%;max-width:360px;">
     <div style="font-size:15px;font-weight:700;margin-bottom:6px;">GitHub 토큰 입력</div>
     <div style="font-size:12px;color:#888;margin-bottom:16px;">최초 1회만 입력하면 저장돼요</div>
@@ -492,7 +492,10 @@ function saveToken() {
 
 function checkToken() {
   if (!localStorage.getItem('gh_token')) {
-    document.getElementById('tokenSetup').style.display = 'flex';
+    const el = document.getElementById('tokenSetup');
+    el.style.display = 'flex';
+    el.style.alignItems = 'center';
+    el.style.justifyContent = 'center';
   }
 }
 
