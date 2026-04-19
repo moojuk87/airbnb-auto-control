@@ -3,307 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyStays 자동화 컨트롤</title>
+<title>MyStays 자동화</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
-
-  :root {
-    --bg: #0f0f0f;
-    --surface: #1a1a1a;
-    --border: #2a2a2a;
-    --accent: #FF5A5F;
-    --accent-dim: rgba(255,90,95,0.15);
-    --text: #f0f0f0;
-    --muted: #888;
-    --success: #22c55e;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --queued: #6b7280;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Noto Sans KR', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    padding: 1.5rem 1rem 3rem;
-    max-width: 480px;
-    margin: 0 auto;
-  }
-
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 2rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .logo {
-    width: 36px;
-    height: 36px;
-    background: var(--accent);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 16px;
-    color: white;
-    flex-shrink: 0;
-  }
-
-  .header-text h1 {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-  }
-
-  .header-text p {
-    font-size: 12px;
-    color: var(--muted);
-    margin-top: 1px;
-  }
-
-  .section {
-    margin-bottom: 1.75rem;
-  }
-
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-  }
-
-  .run-all-btn {
-    width: 100%;
-    padding: 15px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 14px;
-    font-size: 15px;
-    font-weight: 700;
-    font-family: 'Noto Sans KR', sans-serif;
-    cursor: pointer;
-    letter-spacing: -0.2px;
-    transition: opacity 0.15s;
-  }
-
-  .run-all-btn:hover { opacity: 0.88; }
-  .run-all-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .task-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .task-item:last-child { border-bottom: none; }
-
-  .task-info { flex: 1; }
-  .task-name { font-size: 14px; font-weight: 500; }
-  .task-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .task-btn {
-    font-size: 12px;
-    padding: 7px 14px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: transparent;
-    color: var(--text);
-    cursor: pointer;
-    font-family: 'Noto Sans KR', sans-serif;
-    transition: background 0.15s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .task-btn:hover { background: var(--border); }
-  .task-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .schedule-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 16px;
-  }
-
-  .schedule-label { font-size: 14px; font-weight: 500; }
-  .schedule-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-  .schedule-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-
-  .time-input {
-    width: 54px;
-    padding: 7px 8px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Noto Sans KR', sans-serif;
-    text-align: center;
-  }
-
-  .save-btn {
-    font-size: 12px;
-    padding: 7px 12px;
-    border: 1px solid var(--accent);
-    border-radius: 8px;
-    background: var(--accent-dim);
-    color: var(--accent);
-    cursor: pointer;
-    font-family: 'Noto Sans KR', sans-serif;
-    white-space: nowrap;
-  }
-
-  .runs-area {
-    padding: 4px 0;
-  }
-
-  .run-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 11px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .run-item:last-child { border-bottom: none; }
-
-  .run-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .dot-success { background: var(--success); }
-  .dot-failure { background: var(--danger); }
-  .dot-running { background: var(--warning); }
-  .dot-queued { background: var(--queued); }
-
-  .run-name { flex: 1; font-size: 13px; color: var(--text); }
-  .run-meta { font-size: 11px; color: var(--muted); text-align: right; }
-  .run-status { font-size: 11px; font-weight: 500; }
-  .run-status.success { color: var(--success); }
-  .run-status.failure { color: var(--danger); }
-  .run-status.running { color: var(--warning); }
-
-  .log-area {
-    background: #0a0a0a;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 14px 16px;
-    font-size: 12px;
-    font-family: 'Courier New', monospace;
-    color: var(--muted);
-    min-height: 80px;
-    max-height: 200px;
-    overflow-y: auto;
-    line-height: 1.7;
-  }
-
-  .log-ok { color: var(--success); }
-  .log-err { color: var(--danger); }
-  .log-info { color: var(--muted); }
-
-  .link-btn {
-    width: 100%;
-    padding: 13px;
-    background: transparent;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Noto Sans KR', sans-serif;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: background 0.15s;
-    text-decoration: none;
-  }
-
-  .link-btn:hover { background: var(--surface); }
-
-  .refresh-btn {
-    font-size: 11px;
-    padding: 5px 10px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--muted);
-    cursor: pointer;
-    font-family: 'Noto Sans KR', sans-serif;
-  }
-
-  .empty-msg {
-    padding: 16px;
-    font-size: 12px;
-    color: var(--muted);
-    text-align: center;
-  }
-
-  .runs-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px 8px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .runs-title { font-size: 12px; color: var(--muted); }
-
-  .pulse {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--warning);
-    animation: pulse 1.2s infinite;
-    margin-right: 4px;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .toggle { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #444; border-radius: 20px; transition: 0.2s; }
-  .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.2s; }
-  input:checked + .slider { background: #FF5A5F; }
-  input:checked + .slider:before { transform: translateX(16px); }
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+:root { --bg:#0f0f0f;--surface:#1a1a1a;--border:#2a2a2a;--accent:#FF5A5F;--text:#f0f0f0;--muted:#888;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444; }
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:1.5rem 1rem 3rem;max-width:480px;margin:0 auto;}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border);}
+.logo{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:white;flex-shrink:0;}
+.section{margin-bottom:1.75rem;}
+.section-label{font-size:11px;font-weight:500;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;}
+.run-all-btn{width:100%;padding:15px;background:var(--accent);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;}
+.run-all-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.task-item{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);}
+.task-item:last-child{border-bottom:none;}
+.task-name{font-size:14px;font-weight:500;}
+.task-desc{font-size:11px;color:var(--muted);margin-top:2px;}
+.task-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.task-btn{font-size:12px;padding:7px 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--text);cursor:pointer;font-family:inherit;white-space:nowrap;}
+.toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#444;border-radius:20px;transition:0.2s;}
+.slider:before{position:absolute;content:"";height:14px;width:14px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.2s;}
+input:checked+.slider{background:var(--accent);}
+input:checked+.slider:before{transform:translateX(16px);}
+.schedule-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;}
+.schedule-right{display:flex;align-items:center;gap:8px;}
+.time-input{width:54px;padding:7px 8px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:center;}
+.save-btn{font-size:12px;padding:7px 12px;border:1px solid var(--accent);border-radius:8px;background:rgba(255,90,95,0.15);color:var(--accent);cursor:pointer;font-family:inherit;}
+.run-item{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border);}
+.run-item:last-child{border-bottom:none;}
+.run-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dot-success{background:var(--success);}.dot-failure{background:var(--danger);}.dot-running{background:var(--warning);}.dot-queued{background:#6b7280;}
+.run-name{flex:1;font-size:13px;}
+.run-meta{font-size:11px;color:var(--muted);text-align:right;}
+.run-status{font-size:11px;font-weight:500;}
+.run-status.success{color:var(--success);}.run-status.failure{color:var(--danger);}.run-status.running{color:var(--warning);}
+.log-area{background:#0a0a0a;border:1px solid var(--border);border-radius:14px;padding:14px 16px;font-size:12px;font-family:'Courier New',monospace;color:var(--muted);min-height:80px;max-height:200px;overflow-y:auto;line-height:1.7;}
+.log-ok{color:var(--success);}.log-err{color:var(--danger);}.log-info{color:var(--muted);}
+.link-btn{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:14px;color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;}
+.refresh-btn{font-size:11px;padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--muted);cursor:pointer;font-family:inherit;}
+.cancel-btn{font-size:11px;padding:5px 10px;border:1px solid var(--danger);border-radius:6px;background:transparent;color:var(--danger);cursor:pointer;font-family:inherit;display:none;}
+.empty-msg{padding:16px;font-size:12px;color:var(--muted);text-align:center;}
+.pulse{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warning);animation:pulse 1.2s infinite;flex-shrink:0;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
+#tokenSetup{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;align-items:center;justify-content:center;padding:1rem;}
+.token-card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:1.5rem;width:100%;max-width:360px;}
 </style>
 </head>
 <body>
 
-<div id="tokenSetup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;align-items:center;justify-content:center;padding:1rem;">
-  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:1.5rem;width:100%;max-width:360px;">
+<div id="tokenSetup">
+  <div class="token-card">
     <div style="font-size:15px;font-weight:700;margin-bottom:6px;">GitHub 토큰 입력</div>
     <div style="font-size:12px;color:#888;margin-bottom:16px;">최초 1회만 입력하면 저장돼요</div>
     <input type="password" id="tokenInput" placeholder="ghp_..." style="width:100%;padding:10px 12px;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:10px;color:#f0f0f0;font-size:13px;margin-bottom:12px;">
@@ -313,47 +65,42 @@
 
 <div class="header">
   <div class="logo">M</div>
-  <div class="header-text">
-    <h1>MyStays 자동화</h1>
-    <p>Airbnb Auto Maintain Control</p>
-  </div>
+  <div><div style="font-size:16px;font-weight:700;">MyStays 자동화</div><div style="font-size:12px;color:var(--muted);margin-top:1px;">Airbnb Auto Maintain Control</div></div>
 </div>
 
 <div class="section">
-  <button class="run-all-btn" id="runAllBtn" onclick="runWorkflow('all')">
-    전체 실행
-  </button>
+  <button class="run-all-btn" id="runAllBtn" onclick="runAll()">전체 실행</button>
 </div>
 
 <div class="section">
   <div class="section-label">개별 실행 / ON·OFF</div>
   <div class="card">
     <div class="task-item">
-      <div class="task-info"><div class="task-name">제목 변경</div><div class="task-desc">title_changer.py</div></div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div><div class="task-name">제목 변경</div><div class="task-desc">title_changer.py</div></div>
+      <div class="task-right">
         <label class="toggle"><input type="checkbox" id="toggle_title_changer" checked onchange="saveToggles()"><span class="slider"></span></label>
-        <button class="task-btn" onclick="runWorkflow('title_changer')">실행</button>
+        <button class="task-btn" onclick="runOne('title_changer')">실행</button>
       </div>
     </div>
     <div class="task-item">
-      <div class="task-info"><div class="task-name">가격 조정</div><div class="task-desc">price_adjuster.py</div></div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div><div class="task-name">가격 조정</div><div class="task-desc">price_adjuster.py</div></div>
+      <div class="task-right">
         <label class="toggle"><input type="checkbox" id="toggle_price_adjuster" checked onchange="saveToggles()"><span class="slider"></span></label>
-        <button class="task-btn" onclick="runWorkflow('price_adjuster')">실행</button>
+        <button class="task-btn" onclick="runOne('price_adjuster')">실행</button>
       </div>
     </div>
     <div class="task-item">
-      <div class="task-info"><div class="task-name">사진 순서 변경</div><div class="task-desc">photo_arranger.py</div></div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div><div class="task-name">사진 순서 변경</div><div class="task-desc">photo_arranger.py</div></div>
+      <div class="task-right">
         <label class="toggle"><input type="checkbox" id="toggle_photo_arranger" checked onchange="saveToggles()"><span class="slider"></span></label>
-        <button class="task-btn" onclick="runWorkflow('photo_arranger')">실행</button>
+        <button class="task-btn" onclick="runOne('photo_arranger')">실행</button>
       </div>
     </div>
     <div class="task-item">
-      <div class="task-info"><div class="task-name">노출 매크로</div><div class="task-desc">exposure_macro.py</div></div>
-      <div style="display:flex;align-items:center;gap:8px;">
+      <div><div class="task-name">노출 매크로</div><div class="task-desc">exposure_macro.py</div></div>
+      <div class="task-right">
         <label class="toggle"><input type="checkbox" id="toggle_exposure_macro" checked onchange="saveToggles()"><span class="slider"></span></label>
-        <button class="task-btn" onclick="runWorkflow('exposure_macro')">실행</button>
+        <button class="task-btn" onclick="runOne('exposure_macro')">실행</button>
       </div>
     </div>
   </div>
@@ -363,12 +110,9 @@
   <div class="section-label">스케줄 설정</div>
   <div class="card">
     <div class="schedule-row">
-      <div>
-        <div class="schedule-label">매일 자동 실행</div>
-        <div class="schedule-sub" id="scheduleInfo">현재: 매일 오전 9시 (KST)</div>
-      </div>
+      <div><div style="font-size:14px;font-weight:500;">매일 자동 실행</div><div style="font-size:11px;color:var(--muted);margin-top:2px;" id="scheduleInfo">현재: 매일 오전 9시 (KST)</div></div>
       <div class="schedule-right">
-        <input type="number" class="time-input" id="scheduleHour" min="0" max="23" value="9" placeholder="시">
+        <input type="number" class="time-input" id="scheduleHour" min="0" max="23" value="9">
         <span style="font-size:12px;color:var(--muted)">시</span>
         <button class="save-btn" onclick="saveSchedule()">저장</button>
       </div>
@@ -377,164 +121,42 @@
 </div>
 
 <div class="section">
-  <div class="section-label" style="display:flex;justify-content:space-between;align-items:center;">
+  <div class="section-label">
     <span>실행 결과</span>
-    <button class="refresh-btn" onclick="loadRuns()">새로고침</button>
-  </div>
-  <div class="card" style="margin-bottom:10px;">
-    <div class="runs-area" id="runsArea">
-      <div class="empty-msg">로딩 중...</div>
+    <div style="display:flex;gap:6px;">
+      <button class="cancel-btn" id="cancelBtn" onclick="cancelRun()">중지</button>
+      <button class="refresh-btn" onclick="loadRuns()">새로고침</button>
     </div>
   </div>
-  <div class="log-area" id="logArea">
-    <span class="log-info">대기 중...</span>
+  <div class="card" style="margin-bottom:10px;">
+    <div id="runsArea"><div class="empty-msg">로딩 중...</div></div>
   </div>
+  <div class="log-area" id="logArea"><span class="log-info">대기 중...</span></div>
 </div>
 
 <div class="section">
   <a class="link-btn" href="https://docs.google.com/spreadsheets/d/1xtB4Rj1QwSjtDIsYeHzyPQ1XclnfHzydK4Gs_MXTkMA" target="_blank">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
     Google Sheets 열기
   </a>
 </div>
 
 <script>
-const TOKEN = localStorage.getItem('gh_token') || '';
 const REPO = 'moojuk87/airbnb-auto-maintain';
 const WORKFLOW = 'schedule.yml';
+function getToken() { return localStorage.getItem('gh_token') || ''; }
 
-function log(msg, type = 'info') {
+function log(msg, type) {
+  type = type || 'info';
   const area = document.getElementById('logArea');
-  if (area.querySelector('.log-info')?.textContent === '대기 중...') area.innerHTML = '';
+  if (area.querySelector('.log-info') && area.querySelector('.log-info').textContent === '대기 중...') area.innerHTML = '';
   const line = document.createElement('div');
   line.className = 'log-' + type;
-  const t = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  const t = new Date().toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
   line.textContent = '[' + t + '] ' + msg;
   area.appendChild(line);
   area.scrollTop = area.scrollHeight;
 }
-
-function getActiveTasks() {
-  const all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
-  return all.filter(t => document.getElementById('toggle_'+t)?.checked);
-}
-
-function saveToggles() {
-  const all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
-  const state = {};
-  all.forEach(t => state[t] = document.getElementById('toggle_'+t)?.checked ?? true);
-  localStorage.setItem('task_toggles', JSON.stringify(state));
-}
-
-function loadToggles() {
-  try {
-    const state = JSON.parse(localStorage.getItem('task_toggles') || '{}');
-    Object.keys(state).forEach(t => {
-      const el = document.getElementById('toggle_'+t);
-      if (el) el.checked = state[t];
-    });
-  } catch(e) {}
-}
-
-async function runWorkflow(task) {
-  const btn = document.getElementById('runAllBtn');
-  btn.disabled = true;
-  btn.textContent = '실행 중...';
-  let actualTask = task;
-  if (task === 'all') {
-    const active = getActiveTasks();
-    if (active.length === 0) { log('활성화된 기능이 없어요!', 'err'); btn.disabled = false; btn.textContent = '전체 실행'; return; }
-    if (active.length === 4) { actualTask = 'all'; }
-    else { actualTask = active.join(','); }
-  }
-  log('실행 요청 중: ' + actualTask + '...');
-  try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${WORKFLOW}/dispatches`, {
-      method: 'POST',
-      headers: {
-        'Authorization': 'token ' + TOKEN,
-        'Accept': 'application/vnd.github.v3+json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ ref: 'main', inputs: { task: actualTask } })
-    });
-    if (res.status === 204) {
-      log('실행 요청 성공! GitHub Actions 처리 중...', 'ok');
-      setTimeout(loadRuns, 4000);
-      setTimeout(loadRuns, 10000);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      log('오류: ' + (data.message || res.status), 'err');
-    }
-  } catch(e) {
-    log('네트워크 오류: ' + e.message, 'err');
-  }
-  btn.disabled = false;
-  btn.textContent = '전체 실행';
-}
-
-let currentRunId = null;
-let pollInterval = null;
-
-async function cancelRun() {
-  if (!currentRunId) return;
-  try {
-    await fetch(`https://api.github.com/repos/${REPO}/actions/runs/${currentRunId}/cancel`, {
-      method: 'POST',
-      headers: { 'Authorization': 'token ' + TOKEN, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    log('중지 요청 완료!', 'ok');
-    setTimeout(loadRuns, 2000);
-  } catch(e) {
-    log('중지 실패: ' + e.message, 'err');
-  }
-}
-
-async function loadRuns() {
-  try {
-    const res = await fetch(`https://api.github.com/repos/${REPO}/actions/runs?per_page=6`, {
-      headers: { 'Authorization': 'token ' + TOKEN, 'Accept': 'application/vnd.github.v3+json' }
-    });
-    const data = await res.json();
-    const area = document.getElementById('runsArea');
-    if (!data.workflow_runs || data.workflow_runs.length === 0) {
-      area.innerHTML = '<div class="empty-msg">실행 기록 없음</div>';
-      return;
-    }
-    const running = data.workflow_runs.find(r => r.status === 'in_progress' || r.status === 'queued');
-    if (running) {
-      currentRunId = running.id;
-      document.getElementById('cancelBtn').style.display = 'block';
-      if (!pollInterval) pollInterval = setInterval(loadRuns, 5000);
-    } else {
-      currentRunId = null;
-      document.getElementById('cancelBtn').style.display = 'none';
-      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
-    }
-    area.innerHTML = data.workflow_runs.slice(0, 6).map(run => {
-      const status = run.conclusion || run.status;
-      const dotClass = status === 'success' ? 'dot-success' : status === 'failure' ? 'dot-failure' : status === 'in_progress' ? 'dot-running' : 'dot-queued';
-      const label = status === 'success' ? '성공' : status === 'failure' ? '실패' : status === 'in_progress' ? '실행중' : '대기';
-      const labelClass = status === 'success' ? 'success' : status === 'failure' ? 'failure' : 'running';
-      const time = new Date(run.created_at).toLocaleString('ko-KR', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
-      const isRunning = status === 'in_progress';
-      return `<div class="run-item">
-        ${isRunning ? '<span class="pulse"></span>' : `<div class="run-dot ${dotClass}"></div>`}
-        <div class="run-name">${run.display_title || 'Airbnb Auto Maintain'}</div>
-        <div class="run-meta">
-          <div class="run-status ${labelClass}">${label}</div>
-          <div>${time}</div>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">로드 실패</div>';
-  }
-}
-
-loadToggles();
-loadRuns();
-setInterval(loadRuns, 30000); }
 
 function saveToken() {
   const t = document.getElementById('tokenInput').value.trim();
@@ -545,7 +167,7 @@ function saveToken() {
 }
 
 function checkToken() {
-  if (!localStorage.getItem('gh_token')) {
+  if (!getToken()) {
     const el = document.getElementById('tokenSetup');
     el.style.display = 'flex';
     el.style.alignItems = 'center';
@@ -553,8 +175,121 @@ function checkToken() {
   }
 }
 
-checkToken();
+function saveToggles() {
+  const tasks = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  const state = {};
+  tasks.forEach(function(t) { state[t] = document.getElementById('toggle_'+t).checked; });
+  localStorage.setItem('task_toggles', JSON.stringify(state));
+}
 
+function loadToggles() {
+  try {
+    const state = JSON.parse(localStorage.getItem('task_toggles') || '{}');
+    Object.keys(state).forEach(function(t) {
+      const el = document.getElementById('toggle_'+t);
+      if (el) el.checked = state[t];
+    });
+  } catch(e) {}
+}
+
+function getActiveTasks() {
+  const all = ['title_changer','price_adjuster','photo_arranger','exposure_macro'];
+  return all.filter(function(t) { return document.getElementById('toggle_'+t).checked; });
+}
+
+async function dispatch(task) {
+  const res = await fetch('https://api.github.com/repos/' + REPO + '/actions/workflows/' + WORKFLOW + '/dispatches', {
+    method: 'POST',
+    headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
+    body: JSON.stringify({ref: 'main', inputs: {task: task}})
+  });
+  return res.status;
+}
+
+async function runAll() {
+  const btn = document.getElementById('runAllBtn');
+  btn.disabled = true; btn.textContent = '실행 중...';
+  const active = getActiveTasks();
+  if (active.length === 0) { log('활성화된 기능이 없어요!', 'err'); btn.disabled = false; btn.textContent = '전체 실행'; return; }
+  const task = active.length === 4 ? 'all' : active.join(',');
+  log('실행 요청 중: ' + task + '...');
+  try {
+    const status = await dispatch(task);
+    if (status === 204) { log('실행 요청 성공! GitHub Actions 처리 중...', 'ok'); setTimeout(loadRuns, 4000); }
+    else { log('오류: HTTP ' + status, 'err'); }
+  } catch(e) { log('네트워크 오류: ' + e.message, 'err'); }
+  btn.disabled = false; btn.textContent = '전체 실행';
+}
+
+async function runOne(task) {
+  log('실행 요청 중: ' + task + '...');
+  try {
+    const status = await dispatch(task);
+    if (status === 204) { log(task + ' 실행 요청 성공!', 'ok'); setTimeout(loadRuns, 4000); }
+    else { log('오류: HTTP ' + status, 'err'); }
+  } catch(e) { log('네트워크 오류: ' + e.message, 'err'); }
+}
+
+var currentRunId = null;
+var pollInterval = null;
+
+async function cancelRun() {
+  if (!currentRunId) return;
+  try {
+    await fetch('https://api.github.com/repos/' + REPO + '/actions/runs/' + currentRunId + '/cancel', {
+      method: 'POST', headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    log('중지 요청 완료!', 'ok');
+    setTimeout(loadRuns, 2000);
+  } catch(e) { log('중지 실패: ' + e.message, 'err'); }
+}
+
+async function loadRuns() {
+  try {
+    const res = await fetch('https://api.github.com/repos/' + REPO + '/actions/runs?per_page=6', {
+      headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json'}
+    });
+    if (!res.ok) { document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">인증 오류</div>'; return; }
+    const data = await res.json();
+    const area = document.getElementById('runsArea');
+    if (!data.workflow_runs || data.workflow_runs.length === 0) { area.innerHTML = '<div class="empty-msg">실행 기록 없음</div>'; return; }
+    const running = data.workflow_runs.find(function(r) { return r.status === 'in_progress' || r.status === 'queued'; });
+    if (running) {
+      currentRunId = running.id;
+      document.getElementById('cancelBtn').style.display = 'block';
+      if (!pollInterval) pollInterval = setInterval(loadRuns, 5000);
+    } else {
+      currentRunId = null;
+      document.getElementById('cancelBtn').style.display = 'none';
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+    area.innerHTML = data.workflow_runs.slice(0, 6).map(function(run) {
+      const status = run.conclusion || run.status;
+      const dotClass = status === 'success' ? 'dot-success' : status === 'failure' ? 'dot-failure' : status === 'in_progress' ? 'dot-running' : 'dot-queued';
+      const label = status === 'success' ? '성공' : status === 'failure' ? '실패' : status === 'in_progress' ? '실행중' : '대기';
+      const labelClass = status === 'success' ? 'success' : status === 'failure' ? 'failure' : 'running';
+      const time = new Date(run.created_at).toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+      return '<div class="run-item">' +
+        (status === 'in_progress' ? '<span class="pulse"></span>' : '<div class="run-dot ' + dotClass + '"></div>') +
+        '<div class="run-name">' + (run.display_title || 'Airbnb Auto Maintain') + '</div>' +
+        '<div class="run-meta"><div class="run-status ' + labelClass + '">' + label + '</div><div>' + time + '</div></div>' +
+        '</div>';
+    }).join('');
+  } catch(e) { document.getElementById('runsArea').innerHTML = '<div class="empty-msg" style="color:#ef4444">로드 실패</div>'; }
+}
+
+function saveSchedule() {
+  const hour = parseInt(document.getElementById('scheduleHour').value);
+  if (isNaN(hour) || hour < 0 || hour > 23) { log('0~23 사이 값을 입력해줘요', 'err'); return; }
+  const utcHour = (hour - 9 + 24) % 24;
+  document.getElementById('scheduleInfo').textContent = '현재: 매일 오전 ' + hour + '시 (KST)';
+  log("schedule.yml → cron: '0 " + utcHour + " * * *' 으로 변경 후 push 해줘요");
+}
+
+checkToken();
+loadToggles();
+loadRuns();
+setInterval(loadRuns, 30000);
 </script>
 </body>
 </html>
