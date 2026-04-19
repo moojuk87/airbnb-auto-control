@@ -326,35 +326,35 @@
 </div>
 
 <div class="section">
-  <div class="section-label">개별 실행</div>
+  <div class="section-label">개별 실행 / ON·OFF</div>
   <div class="card">
     <div class="task-item">
-      <div class="task-info">
-        <div class="task-name">제목 변경</div>
-        <div class="task-desc">title_changer.py</div>
+      <div class="task-info"><div class="task-name">제목 변경</div><div class="task-desc">title_changer.py</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label class="toggle"><input type="checkbox" id="toggle_title_changer" checked onchange="saveToggles()"><span class="slider"></span></label>
+        <button class="task-btn" onclick="runWorkflow('title_changer')">실행</button>
       </div>
-      <button class="task-btn" onclick="runWorkflow('title_changer')">실행</button>
     </div>
     <div class="task-item">
-      <div class="task-info">
-        <div class="task-name">가격 조정</div>
-        <div class="task-desc">price_adjuster.py</div>
+      <div class="task-info"><div class="task-name">가격 조정</div><div class="task-desc">price_adjuster.py</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label class="toggle"><input type="checkbox" id="toggle_price_adjuster" checked onchange="saveToggles()"><span class="slider"></span></label>
+        <button class="task-btn" onclick="runWorkflow('price_adjuster')">실행</button>
       </div>
-      <button class="task-btn" onclick="runWorkflow('price_adjuster')">실행</button>
     </div>
     <div class="task-item">
-      <div class="task-info">
-        <div class="task-name">사진 순서 변경</div>
-        <div class="task-desc">photo_arranger.py</div>
+      <div class="task-info"><div class="task-name">사진 순서 변경</div><div class="task-desc">photo_arranger.py</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label class="toggle"><input type="checkbox" id="toggle_photo_arranger" checked onchange="saveToggles()"><span class="slider"></span></label>
+        <button class="task-btn" onclick="runWorkflow('photo_arranger')">실행</button>
       </div>
-      <button class="task-btn" onclick="runWorkflow('photo_arranger')">실행</button>
     </div>
     <div class="task-item">
-      <div class="task-info">
-        <div class="task-name">노출 매크로</div>
-        <div class="task-desc">exposure_macro.py</div>
+      <div class="task-info"><div class="task-name">노출 매크로</div><div class="task-desc">exposure_macro.py</div></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <label class="toggle"><input type="checkbox" id="toggle_exposure_macro" checked onchange="saveToggles()"><span class="slider"></span></label>
+        <button class="task-btn" onclick="runWorkflow('exposure_macro')">실행</button>
       </div>
-      <button class="task-btn" onclick="runWorkflow('exposure_macro')">실행</button>
     </div>
   </div>
 </div>
