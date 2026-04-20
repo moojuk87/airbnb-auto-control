@@ -167,16 +167,7 @@ input:checked+.slider:before{transform:translateX(16px);}
   </a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/modules/libsodium-wrappers.js"></script>
 <script>
-// libsodium 초기화
-(async function() {
-  try {
-    await sodium.ready;
-    window._sodium = sodium;
-    window._sodiumReady = true;
-  } catch(e) { window._sodiumReady = false; }
-})();
 var REPO = 'moojuk87/airbnb-auto-maintain';
 var WORKFLOW = 'schedule.yml';
 var scheduleHour = parseInt(localStorage.getItem('schedule_hour') || '9');
@@ -299,19 +290,33 @@ async function saveSchedule() {
 }
 
 async function encryptSecret(keyB64, value) {
-  return new Promise(function(resolve, reject) {
-    if (window._sodiumReady) {
-      try {
-        var sod = window._sodium;
-        var keyBytes = sod.from_base64(keyB64, sod.base64_variants.ORIGINAL);
-        var msgBytes = sod.from_string(value);
-        var encrypted = sod.crypto_box_seal(msgBytes, keyBytes);
-        resolve(sod.to_base64(encrypted, sod.base64_variants.ORIGINAL));
-      } catch(e) { reject(e); }
-    } else {
-      reject(new Error('sodium 로딩 중... 잠시 후 다시 시도해줘요'));
-    }
-  });
+  // GitHub sealed box: X25519 + XSalsa20-Poly1305
+  // tweetnacl 로드
+  if (!window.nacl) {
+    await new Promise(function(resolve, reject) {
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js';
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  var nacl = window.nacl;
+  var recipientKey = new Uint8Array(atob(keyB64).split('').map(function(c){return c.charCodeAt(0);}));
+  var msgBytes = new TextEncoder().encode(value);
+  // ephemeral keypair
+  var epk = nacl.box.keyPair();
+  // nonce: first 24 bytes of SHA-512(epk.pub + recipientKey)
+  var nonceInput = new Uint8Array(epk.publicKey.length + recipientKey.length);
+  nonceInput.set(epk.publicKey); nonceInput.set(recipientKey, epk.publicKey.length);
+  var hashBuf = await crypto.subtle.digest('SHA-512', nonceInput);
+  var nonce = new Uint8Array(hashBuf).slice(0, 24);
+  // box
+  var boxed = nacl.box(msgBytes, nonce, recipientKey, epk.secretKey);
+  // sealed = epk.pub + boxed
+  var sealed = new Uint8Array(epk.publicKey.length + boxed.length);
+  sealed.set(epk.publicKey); sealed.set(boxed, epk.publicKey.length);
+  return btoa(String.fromCharCode.apply(null, sealed));
 }
 
 async function updateSession() {
