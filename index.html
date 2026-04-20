@@ -167,7 +167,6 @@ input:checked+.slider:before{transform:translateX(16px);}
   </a>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/tweetnacl@1.0.3/nacl-fast.min.js"></script>
 <script>
 var REPO = 'moojuk87/airbnb-auto-maintain';
 var WORKFLOW = 'schedule.yml';
@@ -290,6 +289,17 @@ async function saveSchedule() {
   } catch(e) { log('오류: ' + e.message, 'err'); }
 }
 
+async function encryptSecret(keyB64, value) {
+  // libsodium sealed box 방식
+  var sodium = await import('https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/modules/libsodium-wrappers.mjs');
+  await sodium.default.ready;
+  var sod = sodium.default;
+  var keyBytes = sod.from_base64(keyB64, sod.base64_variants.ORIGINAL);
+  var msgBytes = sod.from_string(value);
+  var encrypted = sod.crypto_box_seal(msgBytes, keyBytes);
+  return sod.to_base64(encrypted, sod.base64_variants.ORIGINAL);
+}
+
 async function updateSession() {
   var val = document.getElementById('sessionInput').value.trim();
   if (!val) { log('쿠키를 붙여넣어줘요', 'err'); return; }
@@ -301,22 +311,7 @@ async function updateSession() {
     });
     if (!keyRes.ok) { log('공개키 가져오기 실패: ' + keyRes.status, 'err'); return; }
     var keyData = await keyRes.json();
-
-    // tweetnacl로 암호화
-    var msgUint8 = new TextEncoder().encode(val);
-    var keyUint8 = Uint8Array.from(atob(keyData.key), function(c) { return c.charCodeAt(0); });
-    var encrypted = nacl.box.before ? 
-      nacl.seal(msgUint8, keyUint8) : 
-      (function() {
-        var epk = nacl.box.keyPair();
-        var nonce = nacl.randomBytes(nacl.box.nonceLength);
-        var box = nacl.box(msgUint8, nonce, keyUint8, epk.secretKey);
-        var out = new Uint8Array(epk.publicKey.length + nonce.length + box.length);
-        out.set(epk.publicKey); out.set(nonce, epk.publicKey.length); out.set(box, epk.publicKey.length + nonce.length);
-        return out;
-      })();
-    var encB64 = btoa(String.fromCharCode.apply(null, encrypted));
-
+    var encB64 = await encryptSecret(keyData.key, val);
     var putRes = await fetch('https://api.github.com/repos/' + REPO + '/actions/secrets/SESSION_JSON', {
       method: 'PUT',
       headers: {'Authorization': 'token ' + getToken(), 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json'},
