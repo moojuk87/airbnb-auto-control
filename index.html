@@ -167,7 +167,16 @@ input:checked+.slider:before{transform:translateX(16px);}
   </a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/modules/libsodium-wrappers.js"></script>
 <script>
+// libsodium 초기화
+(async function() {
+  try {
+    await sodium.ready;
+    window._sodium = sodium;
+    window._sodiumReady = true;
+  } catch(e) { window._sodiumReady = false; }
+})();
 var REPO = 'moojuk87/airbnb-auto-maintain';
 var WORKFLOW = 'schedule.yml';
 var scheduleHour = parseInt(localStorage.getItem('schedule_hour') || '9');
@@ -290,14 +299,19 @@ async function saveSchedule() {
 }
 
 async function encryptSecret(keyB64, value) {
-  // libsodium sealed box 방식
-  var sodium = await import('https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/modules/libsodium-wrappers.mjs');
-  await sodium.default.ready;
-  var sod = sodium.default;
-  var keyBytes = sod.from_base64(keyB64, sod.base64_variants.ORIGINAL);
-  var msgBytes = sod.from_string(value);
-  var encrypted = sod.crypto_box_seal(msgBytes, keyBytes);
-  return sod.to_base64(encrypted, sod.base64_variants.ORIGINAL);
+  return new Promise(function(resolve, reject) {
+    if (window._sodiumReady) {
+      try {
+        var sod = window._sodium;
+        var keyBytes = sod.from_base64(keyB64, sod.base64_variants.ORIGINAL);
+        var msgBytes = sod.from_string(value);
+        var encrypted = sod.crypto_box_seal(msgBytes, keyBytes);
+        resolve(sod.to_base64(encrypted, sod.base64_variants.ORIGINAL));
+      } catch(e) { reject(e); }
+    } else {
+      reject(new Error('sodium 로딩 중... 잠시 후 다시 시도해줘요'));
+    }
+  });
 }
 
 async function updateSession() {
